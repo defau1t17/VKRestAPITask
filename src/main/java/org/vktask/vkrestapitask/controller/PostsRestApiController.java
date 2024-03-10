@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class PostsRestApiController {
 
 
     @GetMapping
+    @Cacheable("posts")
     public ResponseEntity<?> getPosts(HttpServletRequest httpServletRequest) {
         return httpServletRequest.getQueryString() == null || httpServletRequest.getQueryString().isEmpty() ?
                 restTemplate.getForEntity("https://jsonplaceholder.typicode.com/posts", String.class) :
@@ -34,6 +36,7 @@ public class PostsRestApiController {
     }
 
     @GetMapping("/{id}/comments")
+    @Cacheable("postComments")
     public ResponseEntity<?> getCommendByPostID(@PathVariable(name = "id") String id) {
         return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/posts/%s/comments".formatted(id), String.class);
     }

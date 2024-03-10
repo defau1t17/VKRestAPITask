@@ -3,6 +3,7 @@ package org.vktask.vkrestapitask.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,8 @@ public class AlbumsRestApiController {
     private final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
 
     @GetMapping
-    private ResponseEntity<?> getUsers(HttpServletRequest httpServletRequest) {
+    @Cacheable("albums")
+    public ResponseEntity<?> getAlbums(HttpServletRequest httpServletRequest) {
         return httpServletRequest.getQueryString() == null || httpServletRequest.getQueryString().isEmpty() ?
                 restTemplate.getForEntity("https://jsonplaceholder.typicode.com/albums", String.class) :
                 restTemplate.getForEntity("https://jsonplaceholder.typicode.com/albums?%s".formatted(
@@ -28,7 +30,8 @@ public class AlbumsRestApiController {
     }
 
     @GetMapping("/{id}/photos")
-    public ResponseEntity<?> getUserAlbums(@PathVariable(name = "id") String id) {
+    @Cacheable("albumPhotos")
+    public ResponseEntity<?> getAlbumPhotos(@PathVariable(name = "id") String id) {
         return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/albums/%s/photos".formatted(id), String.class);
     }
 

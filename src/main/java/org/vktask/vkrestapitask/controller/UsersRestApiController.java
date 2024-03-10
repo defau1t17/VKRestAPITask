@@ -3,6 +3,7 @@ package org.vktask.vkrestapitask.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,8 @@ public class UsersRestApiController {
 
 
     @GetMapping
-    private ResponseEntity<?> getUsers(HttpServletRequest httpServletRequest) {
+    @Cacheable("users")
+    public ResponseEntity<?> getUsers(HttpServletRequest httpServletRequest) {
         return httpServletRequest.getQueryString() == null || httpServletRequest.getQueryString().isEmpty() ?
                 restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users", String.class) :
                 restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users?%s".formatted(
@@ -29,11 +31,13 @@ public class UsersRestApiController {
     }
 
     @GetMapping("/{id}/albums")
+    @Cacheable("userAlbums")
     public ResponseEntity<?> getUserAlbums(@PathVariable(name = "id") String id) {
         return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users/%s/albums".formatted(id), String.class);
     }
 
     @GetMapping("/{id}/posts")
+    @Cacheable("userPosts")
     public ResponseEntity<?> getUserPosts(@PathVariable(name = "id") String id) {
         return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users/%s/posts".formatted(id), String.class);
     }
