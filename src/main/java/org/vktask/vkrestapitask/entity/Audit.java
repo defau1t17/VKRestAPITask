@@ -14,7 +14,7 @@ public class Audit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private int id;
 
     private LocalDate localDate;
 

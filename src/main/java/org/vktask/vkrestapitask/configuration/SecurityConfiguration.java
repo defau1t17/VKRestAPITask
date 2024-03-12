@@ -10,6 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.vktask.vkrestapitask.filter.RestApiFilter;
+import org.vktask.vkrestapitask.service.AuthenticationService;
 import org.vktask.vkrestapitask.service.UserService;
 
 @Configuration
@@ -17,8 +18,9 @@ import org.vktask.vkrestapitask.service.UserService;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-
     private final UserService userService;
+
+    private final AuthenticationService authenticationService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -32,7 +34,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/v1/posts*").hasAnyRole("ADMIN", "POSTS"))
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(new RestApiFilter(userService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new RestApiFilter(userService, authenticationService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

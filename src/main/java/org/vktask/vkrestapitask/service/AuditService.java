@@ -12,8 +12,8 @@ public class AuditService {
 
     private final AuditRepository auditRepository;
 
-    public Audit save() {
-        return auditRepository.save(new Audit());
+    public Audit save(Audit audit) {
+        return auditRepository.save(audit);
     }
 
     public List<Audit> findAll() {
