@@ -14,6 +14,12 @@ public class RegistrationRestApiController {
 
     private final UserService userService;
 
+
+    @GetMapping
+    public ResponseEntity sadasd() {
+        return ResponseEntity.ok("sadasda");
+    }
+
     @PostMapping
     public ResponseEntity<?> saveNewUser(@RequestBody User user) {
         System.out.println(user);

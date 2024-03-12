@@ -1,6 +1,7 @@
 package org.vktask.vkrestapitask.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,13 +14,16 @@ import org.springframework.web.client.RestTemplate;
 import org.vktask.vkrestapitask.dto.AlbumDTO;
 import org.vktask.vkrestapitask.dto.PostsDTO;
 import org.vktask.vkrestapitask.dto.UsersDTO;
+import org.vktask.vkrestapitask.service.AuditService;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class UsersRestApiController {
     private final HttpClient httpClient = HttpClientBuilder.create().build();
     private final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
 
+    private final AuditService auditService;
 
     @GetMapping
     @Cacheable("users")

@@ -3,7 +3,6 @@ package org.vktask.vkrestapitask.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -13,9 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.vktask.vkrestapitask.dto.CommentDTO;
 import org.vktask.vkrestapitask.dto.PostsDTO;
-
-import static org.springframework.http.HttpMethod.DELETE;
-
 
 @RestController
 @RequestMapping("/api/v1/posts")

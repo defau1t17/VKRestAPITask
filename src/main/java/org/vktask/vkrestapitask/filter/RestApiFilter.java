@@ -1,23 +1,21 @@
 package org.vktask.vkrestapitask.filter;
 
+
 import jakarta.servlet.*;
-import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.GenericFilterBean;
-import org.vktask.vkrestapitask.entity.Role;
-import org.vktask.vkrestapitask.entity.User;
-import org.vktask.vkrestapitask.exception.TokenNotFoundException;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.vktask.vkrestapitask.service.AuthenticationService;
 import org.vktask.vkrestapitask.service.UserService;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Optional;
 
-//@Component
-public class RestApiFilter extends GenericFilterBean {
+public class RestApiFilter implements Filter {
 
     private final UserService userService;
 
@@ -25,38 +23,25 @@ public class RestApiFilter extends GenericFilterBean {
         this.userService = userService;
     }
 
-
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws ServletException, IOException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-        String token = httpServletRequest.getHeader("TOKEN");
+        try {
+            Authentication authentication = new AuthenticationService(userService).getAuthentication(httpServletRequest);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        System.out.println(token);
-
-        if (token == null) {
-            HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+        } catch (BadCredentialsException exception) {
+            httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            PrintWriter writer = httpServletResponse.getWriter();
+            writer.print(exception.getMessage());
+            writer.flush();
+            writer.close();
         }
-
-        Optional<User> optionalUser = userService.findUserByToken(token);
-        System.out.println(optionalUser.isPresent());
-        if (optionalUser.isPresent() && allowAccess(httpServletRequest.getRequestURI(), optionalUser.get().getRole())) {
-            filterChain.doFilter(httpServletRequest, httpServletResponse);
-        } else {
-            HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-            httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
+        filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
-
-    private boolean allowAccess(String resource, Role role) {
-        return resource.substring(8)
-                .toUpperCase()
-                .equals(role.name()
-                        .substring(5)) || role == Role.ROLE_ADMIN;
-    }
-
 
 }
+
+
