@@ -3,9 +3,7 @@ package org.vktask.vkrestapitask.aspect;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
@@ -19,7 +17,6 @@ import org.vktask.vkrestapitask.service.AuditService;
 import org.vktask.vkrestapitask.service.UserService;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Optional;
 
 @Aspect
@@ -32,12 +29,6 @@ public class AuditAspect {
     private final UserService userService;
 
     private final AuditService auditService;
-
-    @Pointcut("within(@org.springframework.web.bind.annotation.RestController *) " +
-            "&& !within(org.vktask.vkrestapitask.controller.RegistrationRestApiController) " +
-            "&& !within(org.vktask.vkrestapitask.controller.AuthenticationRestApiController)")
-    public void declare() {
-    }
 
     @Pointcut("execution(* org.vktask.vkrestapitask.service.AuthenticationService.getAuthentication(..))")
     public void declareAuth() {
@@ -52,9 +43,6 @@ public class AuditAspect {
             request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
             result = joinPoint.proceed();
             return result;
-        } catch (BadCredentialsException exception) {
-            audit.setPermission(false);
-            throw exception;
         } catch (Exception ex) {
             audit.setPermission(false);
             throw ex;
@@ -77,14 +65,4 @@ public class AuditAspect {
             }
         }
     }
-
-    @Around(value = "declare()")
-    public Object restApiMethodsExecution(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
-        Object[] args = proceedingJoinPoint.getArgs();
-        String requestParams = args != null ? Arrays.toString(args) : "No parameters";
-        return proceedingJoinPoint.proceed();
-    }
-
-
 }

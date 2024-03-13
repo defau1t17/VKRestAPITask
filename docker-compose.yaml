@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  database:
+    image: postgres:latest
+    container_name: "vk-database-container"
+    environment:
+      POSTGRES_DB: "vkdb"
+      POSTGRES_USER: "vkdb"
+      POSTGRES_PASSWORD: "vkdb"
+    ports:
+      - "5432:5432"
+
+  application:
+    container_name: "vk-rest-api-proxy"
+    ports:
+      - "8080:8080"
+    build:
+      dockerfile: Dockerfile
+    image: application:latest
+    environment:
+      POSTGRES_DB: "vkdb"
+      POSTGRES_USER: "vkdb"
+      POSTGRES_PASSWORD: "vkdb"
+    depends_on:
+      - database
+    restart: always
+
+

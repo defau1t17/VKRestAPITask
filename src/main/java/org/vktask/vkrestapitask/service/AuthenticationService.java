@@ -25,14 +25,14 @@ public class AuthenticationService {
     public Authentication getAuthentication(HttpServletRequest request) {
         String token = request.getHeader(AUTH_TOKEN_HEADER_NAME);
         if (token == null || token.isEmpty()) {
-            throw new BadCredentialsException("Can't find %s".formatted(AUTH_TOKEN_HEADER_NAME));
+            throw new BadCredentialsException("Token not found [%s]".formatted(AUTH_TOKEN_HEADER_NAME));
         } else {
             Optional<User> optionalUser = userService.findUserByToken(token);
 
             if (optionalUser.isPresent()) {
                 return new ApiKeyAuthentication(token, authorities(optionalUser.get().getRole()));
             } else {
-                throw new BadCredentialsException("Token doesn't match %s".formatted(AUTH_TOKEN_HEADER_NAME));
+                throw new BadCredentialsException("Bad credentials[%s]".formatted(AUTH_TOKEN_HEADER_NAME));
             }
         }
     }

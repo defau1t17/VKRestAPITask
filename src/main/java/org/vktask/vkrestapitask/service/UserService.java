@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import org.vktask.vkrestapitask.entity.AuthToken;
 import org.vktask.vkrestapitask.entity.Role;
 import org.vktask.vkrestapitask.entity.User;
-
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -16,6 +16,11 @@ public class UserService extends EntityDAO<User, Integer> {
     private final UserRepository userRepository;
 
     private final TokenRepository tokenRepository;
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
 
     @Override
     public User save(User entity) {
