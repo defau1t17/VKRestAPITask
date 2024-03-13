@@ -6,11 +6,13 @@ import org.vktask.vkrestapitask.service.TokenRepository;
 
 import java.util.UUID;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Entity
 @Data
 public final class AuthToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     private int id;
 
     private String token;

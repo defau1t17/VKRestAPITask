@@ -31,7 +31,7 @@ public class RegistrationRestApiController {
         System.out.println(userService.validateBeforeSave(user));
         return userService.validateBeforeSave(user) ?
                 ResponseEntity
-                        .status(HttpStatus.CREATED)
+                        .ok()
                         .body(userService.save(user).toString()) :
                 ResponseEntity
                         .badRequest()
