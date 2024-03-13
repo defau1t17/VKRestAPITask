@@ -14,13 +14,13 @@
 
 ### Completed
 
-1.[X] Wrote REST API endpoints that proxy a request to [https://jsonplaceholder.typicode.com/](jsonplaceholder)
-2.[X] Wrote Documentation for REST API using Swagger
-3.[X] Created new users through the REST API
-4.[X] Authenticating incoming requests using Spring Security and a custom filter
-5.[X] Collecting data from an incoming request and saving it as an audit trail
-6.[X] Wrote Dockerfile and Compose file
-7.[X] Wrote SQL Insertion Script
+1. [X] Wrote REST API endpoints that proxy a request to [https://jsonplaceholder.typicode.com/](jsonplaceholder)
+2. [X] Wrote Documentation for REST API using Swagger
+3. [X] Created new users through the REST API
+4. [X] Authenticating incoming requests using Spring Security and a custom filter
+5. [X] Collecting data from an incoming request and saving it as an audit trail
+6. [X] Wrote Dockerfile and Compose file
+7. [X] Wrote SQL Insertion Script
 
 
 ### How to use
