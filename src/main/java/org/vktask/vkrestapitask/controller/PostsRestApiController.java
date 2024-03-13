@@ -37,12 +37,23 @@ public class PostsRestApiController {
     @Cacheable("posts")
     public ResponseEntity<?> getPosts(HttpServletRequest httpServletRequest) {
         return httpServletRequest.getQueryString() == null || httpServletRequest.getQueryString().isEmpty() ?
-                restTemplate.getForEntity("https://jsonplaceholder.typicode.com/posts", PostsDTO.class) :
+                restTemplate.getForEntity("https://jsonplaceholder.typicode.com/posts", PostsDTO[].class) :
                 restTemplate.getForEntity("https://jsonplaceholder.typicode.com/posts?%s".formatted(
-                        httpServletRequest.getQueryString().replaceAll("%20", " ")), PostsDTO.class);
+                        httpServletRequest.getQueryString().replaceAll("%20", " ")), PostsDTO[].class);
     }
 
-    @Operation(summary = "Post comments by ID ")
+    @Operation(summary = "Post by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "get post by id", useReturnTypeSchema = true,
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = PostsDTO.class))}),
+            @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
+    @GetMapping("/{id}")
+    @Cacheable("posts")
+    public ResponseEntity<?> getPostByID(@PathVariable(name = "id") String id) {
+        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/posts/%s".formatted(id), PostsDTO.class);
+    }
+
+    @Operation(summary = "Post comment by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "comments under the post", useReturnTypeSchema = true,
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = CommentDTO.class))}),
@@ -50,7 +61,7 @@ public class PostsRestApiController {
     @GetMapping("/{id}/comments")
     @Cacheable("postComments")
     public ResponseEntity<?> getCommentsByPostID(@PathVariable(name = "id") String id) {
-        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/posts/%s/comments".formatted(id), CommentDTO.class);
+        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/posts/%s/comments".formatted(id), CommentDTO[].class);
     }
 
     @Operation(summary = "New Post")
@@ -60,7 +71,13 @@ public class PostsRestApiController {
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @PostMapping
     public ResponseEntity<?> createPost(@RequestBody PostsDTO postsDTO) {
-        return restTemplate.postForEntity("https://jsonplaceholder.typicode.com/posts", postsDTO, PostsDTO.class);
+        ResponseEntity<PostsDTO> response = restTemplate.postForEntity("https://jsonplaceholder.typicode.com/posts", postsDTO, PostsDTO.class);
+        return response != null ?
+                ResponseEntity
+                        .ok(response.getBody()) :
+                ResponseEntity
+                        .badRequest()
+                        .build();
     }
 
     @Operation(summary = "New comment under the Post")
@@ -70,7 +87,13 @@ public class PostsRestApiController {
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @PostMapping("/{id}/comments")
     public ResponseEntity<?> createComment(@RequestBody CommentDTO commentDTO) {
-        return restTemplate.postForEntity("https://jsonplaceholder.typicode.com/comments", commentDTO, CommentDTO.class);
+        ResponseEntity<CommentDTO> response = restTemplate.postForEntity("https://jsonplaceholder.typicode.com/comments", commentDTO, CommentDTO.class);
+        return response != null ?
+                ResponseEntity
+                        .ok(response.getBody()) :
+                ResponseEntity
+                        .badRequest()
+                        .build();
     }
 
     @Operation(summary = "Update Post by ID")

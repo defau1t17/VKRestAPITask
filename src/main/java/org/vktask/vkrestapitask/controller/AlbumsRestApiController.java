@@ -36,9 +36,20 @@ public class AlbumsRestApiController {
     @Cacheable("albums")
     public ResponseEntity<?> getAlbums(HttpServletRequest httpServletRequest) {
         return httpServletRequest.getQueryString() == null || httpServletRequest.getQueryString().isEmpty() ?
-                restTemplate.getForEntity("https://jsonplaceholder.typicode.com/albums", AlbumDTO.class) :
+                restTemplate.getForEntity("https://jsonplaceholder.typicode.com/albums", AlbumDTO[].class) :
                 restTemplate.getForEntity("https://jsonplaceholder.typicode.com/albums?%s".formatted(
-                        httpServletRequest.getQueryString().replaceAll("%20", " ")), AlbumDTO.class);
+                        httpServletRequest.getQueryString().replaceAll("%20", " ")), AlbumDTO[].class);
+    }
+
+    @Operation(summary = "Album by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "get album by ID", useReturnTypeSchema = true,
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = AlbumDTO.class))}),
+            @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
+    @GetMapping("/{id}")
+    @Cacheable("albums")
+    public ResponseEntity<?> getAlbumByID(@PathVariable(name = "id") String id, HttpServletRequest httpServletRequest) {
+        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/albums/%s".formatted(id), AlbumDTO.class);
     }
 
     @Operation(summary = "All Photos in album")
@@ -49,7 +60,7 @@ public class AlbumsRestApiController {
     @GetMapping("/{id}/photos")
     @Cacheable("albumPhotos")
     public ResponseEntity<?> getAlbumPhotos(@PathVariable(name = "id") String id) {
-        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/albums/%s/photos".formatted(id), PhotoDTO.class);
+        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/albums/%s/photos".formatted(id), PhotoDTO[].class);
     }
 
     @Operation(summary = "Create Album")
@@ -59,7 +70,13 @@ public class AlbumsRestApiController {
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @PostMapping
     public ResponseEntity<?> createAlbum(@RequestBody AlbumDTO albumDTO) {
-        return restTemplate.postForEntity("https://jsonplaceholder.typicode.com/albums", albumDTO, AlbumDTO.class);
+        ResponseEntity<AlbumDTO> response = restTemplate.postForEntity("https://jsonplaceholder.typicode.com/albums", albumDTO, AlbumDTO.class);
+        return response != null ?
+                ResponseEntity
+                        .ok(response.getBody()) :
+                ResponseEntity
+                        .badRequest()
+                        .build();
     }
 
     @Operation(summary = "Create photo in Album")
@@ -69,7 +86,13 @@ public class AlbumsRestApiController {
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @PostMapping("/{id}/photos")
     public ResponseEntity<?> createPhotoInAlbum(@PathVariable(name = "id") String id, @RequestBody PhotoDTO photoDTO) {
-        return restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users/%s/photos".formatted(id), photoDTO, PhotoDTO.class);
+        ResponseEntity<PhotoDTO> response = restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users/%s/photos".formatted(id), photoDTO, PhotoDTO.class);
+        return response != null ?
+                ResponseEntity
+                        .ok(response.getBody()) :
+                ResponseEntity
+                        .badRequest()
+                        .build();
     }
 
     @Operation(summary = "Update Album")

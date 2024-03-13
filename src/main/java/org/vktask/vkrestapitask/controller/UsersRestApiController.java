@@ -1,5 +1,6 @@
 package org.vktask.vkrestapitask.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,19 +32,33 @@ public class UsersRestApiController {
     private final HttpClient httpClient = HttpClientBuilder.create().build();
     private final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
 
+    private final ObjectMapper objectMapper;
+
     @Operation(summary = "All Users")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Users by requested params", useReturnTypeSchema = true,
+            @ApiResponse(responseCode = "200", description = "Get all Users ", useReturnTypeSchema = true,
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = UsersDTO.class))}),
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @GetMapping
     @Cacheable("users")
     public ResponseEntity<?> getUsers(HttpServletRequest httpServletRequest) {
         return httpServletRequest.getQueryString() == null || httpServletRequest.getQueryString().isEmpty() ?
-                restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users", String.class) :
+                restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users", UsersDTO[].class) :
                 restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users?%s".formatted(
-                        httpServletRequest.getQueryString().replaceAll("%20", " ")), UsersDTO.class);
+                        httpServletRequest.getQueryString().replaceAll("%20", " ")), UsersDTO[].class);
     }
+
+    @Operation(summary = "User by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get User by ID", useReturnTypeSchema = true,
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = UsersDTO.class))}),
+            @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
+    @GetMapping("/{id}")
+    @Cacheable("users")
+    public ResponseEntity<?> getUserByID(@PathVariable(name = "id") String id) {
+        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users/%s".formatted(id), UsersDTO.class);
+    }
+
 
     @Operation(summary = "All User albums by ID")
     @ApiResponses(value = {
@@ -53,7 +68,7 @@ public class UsersRestApiController {
     @GetMapping("/{id}/albums")
     @Cacheable("userAlbums")
     public ResponseEntity<?> getUserAlbums(@PathVariable(name = "id") String id) {
-        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users/%s/albums".formatted(id), String.class);
+        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users/%s/albums".formatted(id), AlbumDTO[].class);
     }
 
     @Operation(summary = "All User posts by ID")
@@ -64,7 +79,7 @@ public class UsersRestApiController {
     @GetMapping("/{id}/posts")
     @Cacheable("userPosts")
     public ResponseEntity<?> getUserPosts(@PathVariable(name = "id") String id) {
-        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users/%s/posts".formatted(id), String.class);
+        return restTemplate.getForEntity("https://jsonplaceholder.typicode.com/users/%s/posts".formatted(id), PostsDTO[].class);
     }
 
     @Operation(summary = "Create new User")
@@ -74,7 +89,13 @@ public class UsersRestApiController {
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UsersDTO usersDTO) {
-        return restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users", usersDTO, String.class);
+        UsersDTO response = restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users", usersDTO, UsersDTO.class).getBody();
+        return response != null ?
+                ResponseEntity
+                        .ok(response) :
+                ResponseEntity
+                        .badRequest()
+                        .build();
     }
 
     @Operation(summary = "Create new user album by ID ")
@@ -84,7 +105,13 @@ public class UsersRestApiController {
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @PostMapping("/{id}/albums")
     public ResponseEntity<?> createUserAlbum(@PathVariable(name = "id") String id, @RequestBody AlbumDTO albumDTO) {
-        return restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users/%s/albums".formatted(id), albumDTO, String.class);
+        ResponseEntity<AlbumDTO> response = restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users/%s/albums".formatted(id), albumDTO, AlbumDTO.class);
+        return response != null ?
+                ResponseEntity
+                        .ok(response.getBody()) :
+                ResponseEntity
+                        .badRequest()
+                        .build();
     }
 
     @Operation(summary = "Create new user posts by ID ")
@@ -94,7 +121,13 @@ public class UsersRestApiController {
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @PostMapping("/{id}/posts")
     public ResponseEntity<?> createUserPost(@PathVariable(name = "id") String id, @RequestBody PostsDTO postsDTO) {
-        return restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users/%s/posts".formatted(id), postsDTO, String.class);
+        ResponseEntity<PostsDTO> response = restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users/%s/posts".formatted(id), postsDTO, PostsDTO.class);
+        return response != null ?
+                ResponseEntity
+                        .ok(response.getBody()) :
+                ResponseEntity
+                        .badRequest()
+                        .build();
     }
 
     @Operation(summary = "Update user by ID ")
@@ -104,7 +137,7 @@ public class UsersRestApiController {
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable(name = "id") String id, @RequestBody UsersDTO usersDTO) {
-        return restTemplate.exchange("https://jsonplaceholder.typicode.com/users/%s".formatted(id), HttpMethod.PUT, new HttpEntity<>(usersDTO), String.class);
+        return restTemplate.exchange("https://jsonplaceholder.typicode.com/users/%s".formatted(id), HttpMethod.PUT, new HttpEntity<>(usersDTO), UsersDTO.class);
     }
 
     @Operation(summary = "Patched user by ID ")
@@ -114,7 +147,7 @@ public class UsersRestApiController {
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @PatchMapping("/{id}")
     public ResponseEntity<?> patchUser(@PathVariable(name = "id") String id, @RequestBody() Object param) {
-        return restTemplate.exchange("https://jsonplaceholder.typicode.com/users/%s".formatted(id), HttpMethod.PATCH, new HttpEntity<>(param), String.class);
+        return restTemplate.exchange("https://jsonplaceholder.typicode.com/users/%s".formatted(id), HttpMethod.PATCH, new HttpEntity<>(param), UsersDTO.class);
     }
 
     @Operation(summary = "Delete user by ID ")
@@ -123,7 +156,7 @@ public class UsersRestApiController {
                     content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "403", description = "You don't have permission for this Endpoint")})
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePost(@PathVariable(name = "id") String id) {
+    public ResponseEntity<?> deleteUser(@PathVariable(name = "id") String id) {
         return restTemplate.exchange("https://jsonplaceholder.typicode.com/users/%s".formatted(id), HttpMethod.DELETE, null, String.class);
     }
 
